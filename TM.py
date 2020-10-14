@@ -17,7 +17,7 @@ import os
 Fe = 100
 T = 1.0 / Fe #sample spacing
 COM = 'COM3'
-baudrate = 57600
+baudrate = 115200
 datas = []
 ser = serial.Serial(COM, baudrate, timeout=1)
 firstclick = True
@@ -104,7 +104,7 @@ def read_serial(Nb_ligne):
             data = data.split(',')    # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)       # ajoute la liste précédente a la fin d'une matrice
             print(100*i/Nb_ligne) # indique le pourcentage de completion de l'analyse
-            print(line)
+            print(data)
     return datas
 ######################################### OK
 def get_axis_value(Axe,data_List,Nb_ligne,):

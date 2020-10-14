@@ -147,7 +147,7 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 
     Counter_30sec++;
 
-    if (Counter_30sec >= (200 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
+    if (Counter_30sec >= (100 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
     {
       Counter_slice++;
       Counter_30sec = 0;

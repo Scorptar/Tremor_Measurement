@@ -47,12 +47,12 @@ void setup() {
 
   Serial.begin(115200);
 
-  xl.begin(10);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  xl.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   xl.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   xl.setNoise();                  // UltraLow noise setting
   xl.beginMeasure();              // Switch ADXL362 to measure mode
 
-  x2.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x2.begin(8);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x2.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x2.setNoise();                  // UltraLow noise setting
   x2.beginMeasure();              // Switch ADXL362 to measure mode
@@ -66,8 +66,8 @@ void setup() {
   //Serial.println("Start Demo");
 
   //Pin assignement
-  NbrAcc[1] = 10;
-  NbrAcc[2] = 9;
+  NbrAcc[1] = 9;
+  NbrAcc[2] = 8;
   //NbrAcc[3] = 8;
   //NbrAcc[4] = 7;
   //NbrAcc[5] = 6;
@@ -127,7 +127,7 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 
     Counter_30sec++;
 
-    if (Counter_30sec >= (200 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
+    if (Counter_30sec >= (100 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
     {
       Counter_slice++;
       Counter_30sec = 0;
