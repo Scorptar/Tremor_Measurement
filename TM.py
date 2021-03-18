@@ -1,4 +1,4 @@
-# Created By Nicolas Stenuit
+    # Created By Nicolas Stenuit
 # Reviewed By Lucas Garcia
 # Version 3.0 = 21/05
 #########################################
@@ -14,6 +14,8 @@ from datetime import datetime
 import os
 #########################################
 # Definition de nos variables globales
+
+
 Fe = 100
 T = 1.0 / Fe #sample spacing
 COM = 'COM3'
@@ -22,7 +24,7 @@ datas = []
 ser = serial.Serial(COM, baudrate, timeout=1)
 firstclick = True
 rapport = False
-nbcapteur = 3 #nombre d'accéléromètres employés
+nbcapteur = 1 #nombre d'accéléromètres employés
 ######################################### OK !
 def rapport_gen(nom, prenom, n_date):
     # fonction servant à générer un pdf servant de rapport pour le client.
@@ -152,7 +154,7 @@ def plot(k,Nb_ligne,Data_axis,axis_split):
     axes = plt.gca()
     axes.set_xlim([0, 25])
     plt.grid(True)
-    plt.savefig('Images/Analyse-capt-' + str(int(k / (3*nbcapteur)) + 1) + Axe + '.png')
+    plt.savefig('Images/Analyse-capt-' + Axe + '.png')
 #########################################
 def affiche():
     # fonction servant a envoyer le bon caractère sur le port série en fonction du choix des checkbox sur le GUI

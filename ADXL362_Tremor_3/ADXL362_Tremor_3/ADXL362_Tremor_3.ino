@@ -86,8 +86,8 @@ void setup() {
   OCR1A = 9999;// = [(8*10^6) / (100*8)] - 1 (must be <65536)  [Before := [(8*10^6) / (200*1)] - 1] //4999 pour 200Hz
   // turn on CTC modes
   TCCR1B |= (1 << WGM12);
-  // Set CS10 bit for a prescaler of 1
-  TCCR1B |= (1 << CS11); //prescaler de 
+  // Set CS11 bit for a prescaler of 8 (datasheet 328P p110)
+  TCCR1B |= (1 << CS11);
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
 
@@ -103,46 +103,46 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
     
     xl.readXYZData(NbrAcc[1], XValue, YValue, ZValue);
     temp_m_s2 = XValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256 (car 2g au lieu de 8)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     //Serial.print("Capt1");
     Serial.print(temp_m_s2);
     Serial.print(",");
     temp_m_s2 = YValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
-    Serial.print(temp_m_s2);
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
+    Serial.print(temp_m_s2);  
     Serial.print(",");
     temp_m_s2 = ZValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     Serial.print(temp_m_s2);  // Serial.println(ZValue); //To have a clean receiving
     Serial.print(",");
 
     x2.readXYZData(NbrAcc[2], XValue, YValue, ZValue);
     temp_m_s2 = XValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256 (car 2g au lieu de 8)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     //Serial.print("Capt1");
     Serial.print(temp_m_s2);
     Serial.print(",");
     temp_m_s2 = YValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     Serial.print(temp_m_s2);
     Serial.print(",");
     temp_m_s2 = ZValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     Serial.print(temp_m_s2);  // Serial.println(ZValue); //To have a clean receiving
     Serial.print(",");
     
     x3.readXYZData(NbrAcc[3], XValue, YValue, ZValue);
     temp_m_s2 = XValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256 (car 2g au lieu de 8)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     //Serial.print("Capt3");
     Serial.print(temp_m_s2);
     Serial.print(",");
     temp_m_s2 = YValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     Serial.print(temp_m_s2);
     Serial.print(",");
     temp_m_s2 = ZValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
+    temp_m_s2 = temp_m_s2/1000; //donneebrute [LSB] * 1[mg/LSB] /1000 = [g]
     Serial.println(temp_m_s2);  // Serial.println(ZValue); //To have a clean receiving
 
     Counter_30sec++;
