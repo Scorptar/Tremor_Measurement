@@ -13,13 +13,41 @@ import scipy.fftpack
 from fpdf import FPDF
 from datetime import datetime
 import os
+import sys
+import glob
+import serial
 #########################################
 # Definition de nos variables globales
+def serial_ports():
+    """ Lists serial port names
 
+        :raises EnvironmentError:
+            On unsupported or unknown platforms
+        :returns:
+            A list of the serial ports available on the system
+    """
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i + 1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # this excludes your current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('/dev/tty.*')
+    else:
+        raise EnvironmentError('Unsupported platform')
 
+    result = []
+    for port in ports:
+        try:
+            s = serial.Serial(port)
+            s.close()
+            result.append(port)
+        except (OSError, serial.SerialException):
+            pass
+    return result[0]
+COM=serial_ports()
 Fe = 100
 T = 1.0 / Fe #sample spacing
-COM = 'COM4'
 baudrate = 115200
 datas = []
 ser = serial.Serial(COM, baudrate, timeout=1)
@@ -112,6 +140,7 @@ def read_serial(Nb_ligne):
             progress['value'] = round(100 * i / Nb_ligne)
             fenetre.update_idletasks()
     return datas
+
 ######################################### OK
 def get_axis_value(Axe,data_List,Nb_ligne,):
     # fonction permettant d'isoler les données de chaque axe dans des listes séparées
