@@ -18,7 +18,7 @@ import os
 
 Fe = 100
 T = 1.0 / Fe #sample spacing
-COM = 'COM3'
+COM = 'COM4'
 baudrate = 115200
 datas = []
 ser = serial.Serial(COM, baudrate, timeout=1)
