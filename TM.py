@@ -5,6 +5,7 @@
 # import des packages nécessaires.
 import serial
 from tkinter import *
+from tkinter.ttk import Progressbar
 import re
 import matplotlib.pyplot as plt
 import numpy as np
@@ -105,8 +106,11 @@ def read_serial(Nb_ligne):
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')    # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)       # ajoute la liste précédente a la fin d'une matrice
-            print(100*i/Nb_ligne) # indique le pourcentage de completion de l'analyse
-            print(data)
+        print(data)
+        print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
+        if (round(100 * i / Nb_ligne) != progress['value']): #limite à 100 le nb de rafraichissement de la loading bar
+            progress['value'] = round(100 * i / Nb_ligne)
+            fenetre.update_idletasks()
     return datas
 ######################################### OK
 def get_axis_value(Axe,data_List,Nb_ligne,):
@@ -216,7 +220,7 @@ fenetre.title("Tremor Measurement")
 # le paramètre sticky permet de décentrer le contenu d'une case en suivant les points cardinaux ( w = Ouest = a gauche
 # de sa cellule). Nous avons aussi utilisé le principe de padding permettant d'espacer les bords des cellules
 # ( pad = padding extérieur) ou l'intérieur de la cellule de ses bords (ipad = internal pad )
-champ_label = Label(fenetre, text="Coded By Tremor Measurement : Work in progress !")
+champ_label = Label(fenetre, text="Tremor Measurement : Work in progress !")
 var_case = IntVar()
 cb = []
 
@@ -259,9 +263,12 @@ bouton_start.grid(row=6, column=0, sticky='e')
 bouton_stop = Button(fenetre, text="Annuler", command=fenetre.quit)
 bouton_stop.grid(row=6, column=1, sticky='w', padx=17)
 bouton_print = Button(fenetre, text="Imprimer le rapport", command=rap_gen)
-bouton_print.grid(row=6, column=2, sticky='w', padx=15)
+
 # On affiche le label dans la fenêtre
 champ_label.grid(row=17, column=1, sticky='s', ipady=5)
+progress = Progressbar(fenetre, length = 100, mode = 'determinate')
+progress.grid(row=6, column=2, sticky='w', padx=15)
+bouton_print.grid(row=12, column=2, sticky='s', pady=10)
 # On démarre la boucle Tkinter qui s'interompt quand on ferme la fenêtre
 fenetre.mainloop()
 #########################################
