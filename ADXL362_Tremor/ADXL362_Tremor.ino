@@ -55,20 +55,11 @@ void setup() {
   xl.beginMeasure();              // Switch ADXL362 to measure mode
   SRAM.begin(); 
 
-  /*x2.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
-    x3.begin(8);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
-    x4.begin(7);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
-    x5.begin(6);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
-  */
   delay(500);
   //Serial.println("Start Demo");
 
   //Pin assignement
   NbrAcc[1] = 9;
-  /*NbrAcc[2] = 9;
-    NbrAcc[3] = 8;
-    NbrAcc[4] = 7;
-    NbrAcc[5] = 6;  */
 
   cli();//stop interrupts
 
@@ -150,8 +141,7 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 void loop() {
   if (Serial.available() > 0) {
     // read the incoming byte:
-    WriteByteSRAM(); 
-    ReadByteSRAM();
+    
     incomingByte = Serial.read();
     if (processing == 0)
     {
