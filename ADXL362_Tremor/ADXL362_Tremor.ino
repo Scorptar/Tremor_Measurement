@@ -22,8 +22,11 @@
 
 #include <SPI.h>
 #include <ADXL362.h>
+#include <SRAM_23LC.h>
 
 ADXL362 xl;
+SRAM_23LC SRAM(&SPI, A1, SRAM_23LC1024);
+
 /*ADXL362 x2;
   ADXL362 x3;
   ADXL362 x4;
@@ -50,6 +53,7 @@ void setup() {
   xl.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   xl.setNoise();                  // UltraLow noise setting
   xl.beginMeasure();              // Switch ADXL362 to measure mode
+  SRAM.begin(); 
 
   /*x2.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
     x3.begin(8);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
@@ -146,6 +150,8 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 void loop() {
   if (Serial.available() > 0) {
     // read the incoming byte:
+    WriteByteSRAM(); 
+    ReadByteSRAM();
     incomingByte = Serial.read();
     if (processing == 0)
     {
@@ -167,4 +173,18 @@ void loop() {
     }
   }
 
+}
+
+void WriteByteSRAM()
+{
+  uint32_t address = 0x000A;
+  uint8_t byte = 0x1F;
+  size_t ret = SRAM.writeByte(address, byte);
+}
+
+void ReadByteSRAM()
+{
+  uint32_t address = 0x000A;
+  uint8_t byte = SRAM.readByte(address);
+  Serial.println(byte); 
 }
