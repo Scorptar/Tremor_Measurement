@@ -7,6 +7,7 @@ import serial
 from tkinter import *
 from tkinter.ttk import Progressbar
 import re
+import tkinter as tk
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
@@ -58,9 +59,9 @@ nbcapteur = 1 #nombre d'accéléromètres employés
 def rapport_gen(nom, prenom, n_date):
     # fonction servant à générer un pdf servant de rapport pour le client.
     global rapport
-    print(rapport)
+    #print(rapport)
     if rapport == True:   # si l'analyse à été réalisée -> on génère le pdf
-        print("pdf généré")
+        #print("pdf généré")
         nom_ln = str("Nom : " + nom)
         prenom_ln = str("Prenom : " + prenom)
         ndate = n_date.format('%d/%m/%Y')
@@ -86,7 +87,6 @@ def rapport_gen(nom, prenom, n_date):
         pdf.image('Images/Analyse-capt-1Z.png', x=0, y=190, w=200)
 
         pdf.output("Rapport_" + nom + "_" + prenom + ".pdf")
-        label1['text'] = "Le rapport a été généré."
         rapport = False # reset de la valeur pour analyse future
     #Open PDF
         os.startfile("Rapport_" + nom + "_" + prenom + ".pdf")
@@ -124,7 +124,7 @@ def define_value(choix):
         else:
             print("Veuillez rentrer un choix valide")
     return Nb_ligne, Nb_ech
-######################################### INPLEMENTER LOADING BAR
+######################################### OK
 def read_serial(Nb_ligne):
     #fonction permettant de lire et de selectionner l'information envoyée sur le port série par le controlleur
     for i in range(0, Nb_ligne):
@@ -134,9 +134,9 @@ def read_serial(Nb_ligne):
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')    # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)       # ajoute la liste précédente a la fin d'une matrice
-        print(data)
-        print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
-        if (round(100 * i / Nb_ligne) != progress['value']): #limite à 100 le nb de rafraichissement de la loading bar
+        #print(data)
+        #print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
+        if (round(100 * i / Nb_ligne) != progress['value'] and round(100 * i / Nb_ligne)%5==0): #limite à 100 le nb de rafraichissement de la loading bar
             progress['value'] = round(100 * i / Nb_ligne)
             fenetre.update_idletasks()
     return datas
@@ -204,12 +204,13 @@ def affiche():
         choix = "E"
     elif arg == 5:
         choix = "F"
-    print(choix)
+    #print(choix)
     return choix
 ######################################### MODIF
 def start():
-    label1['text'] = "Analyse effectuée"
     global rapport # définition d'une variable globale pour empêcher l'utilisation du bouton imprimer avant d'avoir réalisé l'analyse.
+    bouton_print.configure(state="disabled")
+    bouton_start.configure(state="disabled")
     choix = affiche() # fonction permettant d'envoyer le bon caractère sur le port série pour définir le temps d'acquisition du programme.
     Nb_ligne, Nb_ech = define_value(choix) # fonction permettant de définir les constantes utilisées dans le code en fonction du choix de l'utilisateur.
     Datas = read_serial(Nb_ligne) # Lecture des données envoyées par l'arduino sur le port série et enregistrement des données dans une liste.
@@ -219,6 +220,8 @@ def start():
         axis_split = [Data_Axis[x:x+2*Fe] for x in range(0,len(Data_Axis),2*Fe)] # Split de la liste des valeurs pour un axe en époque de 2 secondes( 2*Fe )
         plot(k,Nb_ligne,Data_Axis,axis_split) # fonction servant à generer nos axes
     rapport = True # autorisation d'utilisation du bouton d'impression
+    bouton_print.configure(state="normal")
+    bouton_start.configure(state="normal")
     return axis_split
 #########################################
 def rap_gen():
@@ -234,6 +237,14 @@ def on_entry_click(event):
         entry1.delete(0, "end")
         entry2.delete(0, "end")
         entry3.delete(0, "end")
+
+def ifcompleted(*args):
+    if ((var_nom.get() != entry1_def_msg and len(var_nom.get()) > 0) and  # nom inchangé ou vide
+            (var_prenom.get() != entry2_def_msg and len(var_prenom.get()) > 0) and  # prenom inchangé ou vide
+            (var_date.get() != entry3_def_msg and len(var_date.get()) > 0)):  # date inchangée ou vide
+        bouton_start.configure(state="normal")
+    else:
+        bouton_start.configure(state="disabled")
 #########################################
 fenetre = Tk()
 #########################################
@@ -249,7 +260,6 @@ fenetre.title("Tremor Measurement")
 # le paramètre sticky permet de décentrer le contenu d'une case en suivant les points cardinaux ( w = Ouest = a gauche
 # de sa cellule). Nous avons aussi utilisé le principe de padding permettant d'espacer les bords des cellules
 # ( pad = padding extérieur) ou l'intérieur de la cellule de ses bords (ipad = internal pad )
-champ_label = Label(fenetre, text="Tremor Measurement : Work in progress !")
 var_case = IntVar()
 cb = []
 
@@ -257,29 +267,32 @@ label = Label(fenetre, text="Nom du patient: ")
 label.grid(row=0, column=0, sticky='w')
 
 entry1 = Entry(fenetre, bd=1, width=33, textvariable=var_nom)
-entry1.insert(0, 'Veuillez rentrer le nom du patient:')
+entry1_def_msg='Veuillez rentrer le nom du patient:'
+entry1.insert(0, entry1_def_msg)
 entry1.bind('<FocusIn>', on_entry_click)
 entry1.grid(row=0, column=1, sticky='w')
+var_nom.trace("w", ifcompleted)
+
 
 label = Label(fenetre, text="Prénom du patient: ")
 label.grid(row=1, column=0, sticky='w')
 
 entry2 = Entry(fenetre, bd=1, width=33, textvariable=var_prenom)
-entry2.insert(0, 'Veuillez rentrer le prénom du patient:')
+entry2_def_msg='Veuillez rentrer le prénom du patient:'
+entry2.insert(0, entry2_def_msg)
 entry2.bind('<FocusIn>', on_entry_click)
 entry2.grid(row=1, column=1, sticky='w')
+var_prenom.trace("w", ifcompleted)
 
 label = Label(fenetre, text="Date de naissance du patient:")
 label.grid(row=2, column=0, sticky='w')
 
-entry3 = Entry(fenetre, bd=1, width=13, textvariable=var_date)
-entry3.insert(0, 'DD/MM/YYYY')
+entry3 = Entry(fenetre, bd=1, width=33, textvariable=var_date)
+entry3_def_msg='JJ/MM/AAAA'
+entry3.insert(0, entry3_def_msg)
 entry3.bind('<FocusIn>', on_entry_click)
 entry3.grid(row=2, column=1, sticky='w')
-
-label1 = Label(fenetre, text=var_state)
-label1.grid(row=4, column=0, sticky='w'
-                                    '', columnspan=2)
+var_date.trace("w", ifcompleted)
 
 for i in range(6):
     cb.append(Checkbutton(fenetre, text=str((i + 1) * 30) + " Secondes", onvalue=i, variable=var_case))
@@ -288,13 +301,13 @@ for i in range(6):
     cb[i].grid(row=i, column=2)
 
 bouton_start = Button(fenetre, text="Démarrer", command=start)
+bouton_start.configure(state="disabled")
 bouton_start.grid(row=6, column=0, sticky='e')
+
 bouton_stop = Button(fenetre, text="Annuler", command=fenetre.quit)
 bouton_stop.grid(row=6, column=1, sticky='w', padx=17)
 bouton_print = Button(fenetre, text="Imprimer le rapport", command=rap_gen)
-
-# On affiche le label dans la fenêtre
-champ_label.grid(row=17, column=1, sticky='s', ipady=5)
+bouton_print.configure(state="disabled")
 progress = Progressbar(fenetre, length = 100, mode = 'determinate')
 progress.grid(row=6, column=2, sticky='w', padx=15)
 bouton_print.grid(row=12, column=2, sticky='s', pady=10)
