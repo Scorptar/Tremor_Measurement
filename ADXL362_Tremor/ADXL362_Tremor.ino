@@ -44,8 +44,8 @@ int8_t processing = 0; // Flag to show if we are already gathering data from acc
 int16_t Counter_30sec = 0; // We have 640 interrupt each seconds
 int8_t Counter_slice = 0; // Counts the number of 30seconds slices. 30sec to 180sec <=> 1 to 6
 int8_t slicesNbr = 0; // Contains the time asked by the user (time asked = slicesNbr * 30)
-int START_ADDRESS_WRITE=250; 
-int START_ADDRESS_READ=250; 
+int START_ADDRESS_WRITE=100; 
+int START_ADDRESS_READ=100; 
 
 void setup() {
 
@@ -128,38 +128,44 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
     
     if (Counter_slice == slicesNbr) //Lorsque c'est terminé 
     {
-      for(int i=0; i<=3000*slicesNbr; i++)
+      for(int i=1; i<=3000*slicesNbr; i++)
       {
         
         int8_t MSB;
         int8_t LSB; 
         int16_t wd;
-        
+
         MSB=SRAM.readByte(START_ADDRESS_READ); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
-        Serial.println((wd/1024)*9.81);
-  
-        Serial.print(",");
+        Serial.flush(); 
+        Serial.print((wd/1024)*9.81);
+
+        Serial.flush(); 
+        Serial.print(",");   
         MSB=SRAM.readByte(START_ADDRESS_READ+2); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
-        Serial.println((wd/1024)*9.81);
-  
+        Serial.flush(); 
+        Serial.print((wd/1024)*9.81); 
+
+        Serial.flush(); 
         Serial.print(",");
         MSB=SRAM.readByte(START_ADDRESS_READ+4); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        Serial.flush(); 
         Serial.println((wd/1024)*9.81);
-  
+
         START_ADDRESS_READ+=6; 
+
       }
       processing = 0;
       //Serial.println(processing);
       Counter_slice = 0;
       Counter_30sec = 0;
-      START_ADDRESS_WRITE=250;
-      START_ADDRESS_READ=250;
+      START_ADDRESS_WRITE=100;
+      START_ADDRESS_READ=100;
       //Serial.println("END");
     }
   }

@@ -127,14 +127,14 @@ def define_value(choix):
 ######################################### OK
 def read_serial(Nb_ligne):
     #fonction permettant de lire et de selectionner l'information envoyée sur le port série par le controlleur
-    for i in range(0, Nb_ligne):
+    for i in range(0, Nb_ligne+30*(Nb_ligne//3000)):
         line = ser.readline()    #lit la ligne envoyée sur le port série et stocke les valeurs dans un string.
         if line:
             reg = re.search(r'\'(.*?)\\', str(line)) # Regex permettant d'isoler l'information nécessaire proprement.
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')    # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)       # ajoute la liste précédente a la fin d'une matrice
-        #print(data)
+            print(line)
         #print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
         if (round(100 * i / Nb_ligne) != progress['value'] and round(100 * i / Nb_ligne)%5==0): #limite à 100 le nb de rafraichissement de la loading bar
             progress['value'] = round(100 * i / Nb_ligne)
