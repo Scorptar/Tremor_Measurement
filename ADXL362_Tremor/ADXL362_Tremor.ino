@@ -24,17 +24,16 @@
 #include <ADXL362.h>
 #include <SRAM_23LC.h>
 
+
+
 ADXL362 xl;
 SRAM_23LC SRAM(&SPI, A1, SRAM_23LC1024);
-
-/*ADXL362 x2;
-  ADXL362 x3;
-  ADXL362 x4;
-  ADXL362 x5;*/
 
 int16_t temp;
 int16_t XValue, YValue, ZValue, Temperature;
 float temp_m_s2;
+char buf_in[10];
+
 //int8_t  XLValue, YLValue, ZLValue, XHValue, YHValue, ZHValue;
 
 int NbrAcc[7]; // '7' (instead of '5') of size because we don't use number zero and we need to let the last one empty to hold the required null character.
@@ -45,6 +44,8 @@ int8_t processing = 0; // Flag to show if we are already gathering data from acc
 int16_t Counter_30sec = 0; // We have 640 interrupt each seconds
 int8_t Counter_slice = 0; // Counts the number of 30seconds slices. 30sec to 180sec <=> 1 to 6
 int8_t slicesNbr = 0; // Contains the time asked by the user (time asked = slicesNbr * 30)
+int START_ADDRESS_WRITE=250; 
+int START_ADDRESS_READ=250; 
 
 void setup() {
 
@@ -81,58 +82,84 @@ void setup() {
 
 ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 
+  union ByteSplit
+    {
+      int16_t int16; 
+      int8_t int8[2];
+     };
+     
   if (processing == 127)
   {
-    //NbrAccCounter =1;//++;
-
     xl.readXYZData(NbrAcc[1], XValue, YValue, ZValue);
-    //Serial.print("X");
-    //Serial.print(NbrAccCounter);
-    //Serial.print(":");
 
-    //Serial.print(","); Enlever sinon marche pas
-    temp_m_s2 = XValue;
+    ByteSplit ValueX;
+    ValueX.int16= XValue; 
+    SRAM.writeByte(START_ADDRESS_WRITE,ValueX.int8[1]); //Write MSB
+    SRAM.writeByte(START_ADDRESS_WRITE+1,ValueX.int8[0]); // Write LSB
+    /*temp_m_s2 = XValue;
     temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256 (car 2g au lieu de 8)
-    Serial.print(temp_m_s2);
-
-    //Serial.print("Y");    // Serial.print("\tY"); //To have a clean receiving
-    //Serial.print(NbrAccCounter);
-    //Serial.print(":");
-    //Serial.print("\t");
-    Serial.print(",");
-    temp_m_s2 = YValue;
+    Serial.print(temp_m_s2);*/
+    
+    
+    ByteSplit ValueY;
+    ValueY.int16= YValue; 
+    SRAM.writeByte(START_ADDRESS_WRITE+2,ValueY.int8[1]); //Write MSB
+    SRAM.writeByte(START_ADDRESS_WRITE+3,ValueY.int8[0]); // Write LSB
+    
+    /*temp_m_s2 = YValue;
     temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
-    Serial.print(temp_m_s2);
+    Serial.print(temp_m_s2);*/
 
-    //Serial.print("Z");    // Serial.print("\tZ"); //To have a clean receiving
-    //Serial.print(NbrAccCounter);
-    //Serial.print(":");
-    //Serial.print("\t");
-    Serial.print(",");
-    temp_m_s2 = ZValue;
-    temp_m_s2 = (temp_m_s2 / 1024) * 9.81; //1024 (avant 256)
-    Serial.println(temp_m_s2);  // Serial.println(ZValue); //To have a clean receiving
+   
+    ByteSplit ValueZ;
+    ValueZ.int16= ZValue; 
+    SRAM.writeByte(START_ADDRESS_WRITE+4,ValueZ.int8[1]); //Write MSB
+    SRAM.writeByte(START_ADDRESS_WRITE+5,ValueZ.int8[0]); // Write LSB
 
-    /*if (NbrAccCounter >= 5){
-      NbrAccCounter = 0;
-      Serial.print("\n");
-      }*/
-
-
+    START_ADDRESS_WRITE+=6;
     Counter_30sec++;
 
     if (Counter_30sec >= (100 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
     {
       Counter_slice++;
       Counter_30sec = 0;
-      //Serial.println(Counter_slice);
     }
-    if (Counter_slice == slicesNbr)
+
+    
+    if (Counter_slice == slicesNbr) //Lorsque c'est terminé 
     {
+      for(int i=0; i<=3000*slicesNbr; i++)
+      {
+        
+        int8_t MSB;
+        int8_t LSB; 
+        int16_t wd;
+        
+        MSB=SRAM.readByte(START_ADDRESS_READ); //Read MSB
+        LSB=SRAM.readByte(START_ADDRESS_READ+1); // Read LSB
+        wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        Serial.println((wd/1024)*9.81);
+  
+        Serial.print(",");
+        MSB=SRAM.readByte(START_ADDRESS_READ+2); //Read MSB
+        LSB=SRAM.readByte(START_ADDRESS_READ+3); // Read LSB
+        wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        Serial.println((wd/1024)*9.81);
+  
+        Serial.print(",");
+        MSB=SRAM.readByte(START_ADDRESS_READ+4); //Read MSB
+        LSB=SRAM.readByte(START_ADDRESS_READ+5); // Read LSB
+        wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        Serial.println((wd/1024)*9.81);
+  
+        START_ADDRESS_READ+=6; 
+      }
       processing = 0;
       //Serial.println(processing);
       Counter_slice = 0;
       Counter_30sec = 0;
+      START_ADDRESS_WRITE=250;
+      START_ADDRESS_READ=250;
       //Serial.println("END");
     }
   }
@@ -150,7 +177,6 @@ void loop() {
         slicesNbr = incomingByte - 64; // ASCII de A(30s) = 65, F(180s) = 70.
         // data processing started
         processing = 127;
-        //Serial.println(processing);
       }
       else
       {
@@ -163,18 +189,4 @@ void loop() {
     }
   }
 
-}
-
-void WriteByteSRAM()
-{
-  uint32_t address = 0x000A;
-  uint8_t byte = 0x1F;
-  size_t ret = SRAM.writeByte(address, byte);
-}
-
-void ReadByteSRAM()
-{
-  uint32_t address = 0x000A;
-  uint8_t byte = SRAM.readByte(address);
-  Serial.println(byte); 
 }
