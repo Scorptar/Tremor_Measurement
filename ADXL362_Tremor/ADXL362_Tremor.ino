@@ -26,7 +26,7 @@
 
 
 
-ADXL362 xl;
+ADXL362 x1;
 SRAM_23LC SRAM(&SPI, A1, SRAM_23LC1024);
 
 int16_t temp;
@@ -50,10 +50,12 @@ int START_ADDRESS_READ=100;
 void setup() {
 
   Serial.begin(115200);
-  xl.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
-  xl.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
-  xl.setNoise();                  // UltraLow noise setting
-  xl.beginMeasure();              // Switch ADXL362 to measure mode
+  x1.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x1.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
+  x1.setNoise();                  // UltraLow noise setting
+  x1.beginMeasure();              // Switch ADXL362 to measure mode
+  x1.checkAllControlRegs(); 
+  
   SRAM.begin(); 
 
   delay(500);
@@ -90,7 +92,7 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
      
   if (processing == 127)
   {
-    xl.readXYZData(NbrAcc[1], XValue, YValue, ZValue);
+    x1.readXYZData(NbrAcc[1], XValue, YValue, ZValue);
 
     ByteSplit ValueX;
     ValueX.int16= XValue; 

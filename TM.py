@@ -85,7 +85,7 @@ def rapport_gen(nom, prenom, n_date):
 
         # Textes
         pdf.text(10, 10, prenom_ln)
-        pdf.text(10, 15, nom_ln)
+        pdf.text(10, 15, nom_ln.upper())
         pdf.text(10, 20, ndate_ln)
         pdf.text(130, 10, auj)
 
