@@ -61,7 +61,7 @@ firstclick = True
 loading_ok = False
 rapport = False
 starttime = 0
-nbcapteur = 1  # nombre d'accéléromètres employés
+nbcapteur = 5  # nombre d'accéléromètres employés
 
 
 ######################################### OK !
@@ -155,7 +155,7 @@ def read_serial(Nb_ligne):
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')  # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)  # ajoute la liste précédente a la fin d'une matrice
-            print(line)
+            print(data)
         # print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
     info_label['text'] = "Données reçues. Vous pouvez imprimer le rapport."
     info2_label['text'] = "                                                      "

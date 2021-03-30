@@ -21,7 +21,7 @@ float i=0; //value sent
 //int8_t  XLValue, YLValue, ZLValue, XHValue, YHValue, ZHValue;
 
 int NbrAcc[7]; // '7' (instead of '5') of size because we don't use number zero and we need to let the last one empty to hold the required null character.
-int8_t NbrAccCounter = 1;
+int8_t NbrAccCounter = 5;
 
 int incomingByte = 0; // for incoming serial data
 int8_t processing = 0; // Flag to show if we are already gathering data from accelerometers
@@ -42,7 +42,6 @@ void setup() {
     x4.begin(7);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
     x5.begin(6);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   */
-  delay(500);
   //Serial.println("Start Demo");
 
   //Pin assignement
@@ -74,13 +73,20 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
 
   if (processing == 127)
   {
-    i=i+1;//1-->3000
-    Serial.print(i);
-    Serial.print(",");
-    Serial.print(i);
-    Serial.print(",");
-    Serial.println(i);
-
+    i=i+1;//1-->3000*slicesNbr
+    
+    for (int j=1;j<=NbrAccCounter;j++){
+      Serial.print(i);
+      Serial.print(",");
+      Serial.print(i);
+      Serial.print(",");
+      Serial.print(i);
+      if (j != NbrAccCounter) //between each sensor
+        Serial.print(",");
+      if (j==NbrAccCounter)
+        Serial.println("");
+    }
+    
     Counter_30sec++;
 
     if (Counter_30sec >= (100 * 30)) //200 = 1second   //Before: (640*30)) //640 = 1second
@@ -110,6 +116,7 @@ void loop() {
       if (incomingByte >= 65 and incomingByte <= 70)
       {
         slicesNbr = incomingByte - 64; // ASCII de A(30s) = 65, F(180s) = 70.
+        delay(5000); //wait 5 seconds to see on TM interface what happen during what should be the measure
         // data processing started
         processing = 127;
         //Serial.println(processing);
