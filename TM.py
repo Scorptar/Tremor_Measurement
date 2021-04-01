@@ -8,20 +8,26 @@ from tkinter import *
 from tkinter.ttk import Progressbar
 import re
 import tkinter as tk
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
 from fpdf import FPDF
 from datetime import datetime
+from math import ceil
 import os
+import os.path
+from os import path
 import sys
 import glob
 import serial
 import time
+import xlsxwriter
 
 
 #########################################
-# Definition de nos variables globales
+
 def serial_ports():
     """ Lists serial port names
 
@@ -50,60 +56,119 @@ def serial_ports():
             pass
     return result[0]
 
+# Global variables
 
-COM = serial_ports()
+COM = serial_ports() #Check for the right COM port
 Fe = 100
 T = 1.0 / Fe  # sample spacing
 baudrate = 115200
 datas = []
 ser = serial.Serial(COM, baudrate, timeout=1)
 firstclick = True
-loading_ok = False
 rapport = False
-starttime = 0
 nbcapteur = 5  # nombre d'accéléromètres employés
 
 
-######################################### OK !
 def rapport_gen(nom, prenom, n_date):
     # fonction servant à générer un pdf servant de rapport pour le client.
     global rapport
-    # print(rapport)
     if rapport == True:  # si l'analyse à été réalisée -> on génère le pdf
-        # print("pdf généré")
+
         nom_ln = str("Nom : " + nom)
         prenom_ln = str("Prenom : " + prenom)
         ndate = n_date.format('%d/%m/%Y')
         ndate_ln = str("Date de naissance : " + ndate)
         auj = str("Date de mesure : " + str(datetime.now().strftime("%d/%m/%Y : %H:%M")))
-        # variable servant à identifier le patient
+        msg_p1=str("Résultats pour la moyenne des 5 capteurs")
 
         # Config PDF generator
         pdf = FPDF(orientation='P', unit='mm', format='A4')
-        pdf.add_page()
         pdf.set_font("Arial", size=12)
+        nbpage = str(nbcapteur + 1)
 
-        # Textes
-        pdf.text(10, 10, prenom_ln)
-        pdf.text(10, 15, nom_ln.upper())
-        pdf.text(10, 20, ndate_ln)
-        pdf.text(130, 10, auj)
+        for i in range(1,nbcapteur+2):
+            pdf.add_page()
+            # Textes
+            if i == 1 and nbcapteur>1:
+                msg=str("Analyse moyenne pour l'ensemble des capteurs")
+                pdf.text(67, 28, msg)
+            else :
+                msg=str("Analyse du capteur " + str(i-1))
+                pdf.text(90, 28, msg)
+            pdf.text(10, 10, prenom_ln)
+            pdf.text(10, 15, nom_ln)
+            pdf.text(10, 20, ndate_ln)
+            pdf.text(130, 10, auj)
 
-        # Images
-        # Capt 1
-        pdf.image('Images/Analyse-capt-1X.png', x=0, y=30, w=200)
-        pdf.image('Images/Analyse-capt-1Y.png', x=0, y=110, w=200)
-        pdf.image('Images/Analyse-capt-1Z.png', x=0, y=190, w=200)
+            # Images
+            if i == 1 and nbcapteur > 1:
+                pdf.image('Images/MoyX.png', x=10, y=30, w=200)
+                pdf.image('Images/MoyY.png', x=10, y=100, w=200)
+                pdf.image('Images/MoyZ.png', x=10, y=180, w=200)
+            else :
+                pdf.image('Images/' + str(i-1) + 'X.png', x=10, y=30, w=200)
+                pdf.image('Images/' + str(i-1) + 'Y.png', x=10, y=100, w=200)
+                pdf.image('Images/' + str(i-1) + 'Z.png', x=10, y=180, w=200)
 
-        pdf.output("Rapport_" + nom + "_" + prenom + ".pdf")
+            #Page number
+            pdf.set_y(260)
+            pdf.cell(0, 10, 'Page ' + str(pdf.page_no()) + '/' + nbpage, 0, 0, 'C')
+
+        # Generate pdf
+        pdfname_date = str(datetime.now().strftime("%Y_%m_%d_%H_%M"))
+        pdf.output("Rapport_" + nom.upper() + "_" + prenom + "-" + pdfname_date + ".pdf")
         rapport = False  # reset de la valeur pour analyse future
         # Open PDF
-        os.startfile("Rapport_" + nom + "_" + prenom + ".pdf")
-        info_label['text'] = "Rapport généré. Celui-ci s'ouvrira automatiquement dans quelques instants. "
+
+        os.startfile("Rapport_" + nom.upper() + "_" + prenom + "-" + pdfname_date + ".pdf")
+        info_label['text'] = "Rapport généré. Ouverture automatique en cours. "
         fenetre.update_idletasks()
 
-    ######################################### OK !
-
+def excel_gen(Nb_ligne,Datas):
+    # Create a workbook and add a worksheet.
+    info_label['text'] = "Enregistrement des données en cours.            "
+    fenetre.update_idletasks()
+    excel_name_date = str(datetime.now().strftime("%Y_%m_%d_%H_%M"))
+    workbook = xlsxwriter.Workbook('Données_' + str((var_nom.get()).upper()) + '_' + str(var_prenom.get()) + "-" + excel_name_date + ".xlsx")
+    worksheet = workbook.add_worksheet(excel_name_date)
+    worksheet.set_column('A:Z', 12) #set column width (auto adjust not possible
+    # Add a (bold + border + center) format for title line
+    title = workbook.add_format({'bold': True})
+    title.set_border(1)
+    title.set_align('center')
+    # Same without bold for other cells
+    regular=workbook.add_format()
+    regular.set_border(1)
+    #Generate title line with axis labels
+    titleline=["Temps [s]"]
+    for k in range(0,3 * nbcapteur):
+        if k % 3 == 0:
+            if k==0 :
+                Axe = "Capteur 1X"
+            else:
+                Axe = str("Capteur ") + str((k//3)+1) + str("-X")
+        elif k % 3  == 1:
+            Axe = str("Capteur ") + str(ceil(k/3)) + str("-Y")
+        else:
+            Axe = str("Capteur ") + str(ceil(k/3)) + str("-Z")
+        titleline.append(Axe)
+    # Start from the first cell. Rows and columns are zero indexed.
+    row = 0
+    col = 0
+    worksheet.write_row(row, col, titleline, title)
+    #Append to data a Time stamp
+    timestamp=np.linspace(0.0, (Nb_ligne/100)-T, Nb_ligne)
+    Datas = np.array(Datas, dtype=np.float32)
+    timestamp=np.column_stack([timestamp, Datas])
+    # Start from the second line. Rows and columns are zero indexed.
+    col=0
+    row=1
+    # Iterate over the data and write it out column by column.
+    for row, data in enumerate(timestamp):
+        worksheet.write_row(row+1, col, data, regular)
+    workbook.close()
+    info_label['text'] = "Enregistrement terminé. Vous pouvez imprimer le rapport. "
+    fenetre.update_idletasks()
 
 def define_value(choix):
     # fonction permettant de définir les constantes du nombres d'époque et du nombre de ligne de données attendue par le
@@ -146,19 +211,18 @@ def read_serial(Nb_ligne):
     for i in range(0, Nb_ligne + 30 * (Nb_ligne // 3000)):
         line = ser.readline()  # lit la ligne envoyée sur le port série et stocke les valeurs dans un string
         if i == 30 * (Nb_ligne // 3000) - 1:
-            info_label['text'] = "Prise de mesure terminée. Transfert vers PC en cours"
+            info_label['text'] = "Prise de mesure terminée. Transfert vers PC en cours        "
             info2_label['text'] = "Temps estimé : {} secondes.".format(8 * (Nb_ligne // 3000))
             fenetre.update_idletasks()
-            print("j'ai écris")
         if line:
             reg = re.search(r'\'(.*?)\\', str(line))  # Regex permettant d'isoler l'information nécessaire proprement.
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')  # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)  # ajoute la liste précédente a la fin d'une matrice
-            print(data)
-        # print(round(100 * i / Nb_ligne))  # indique le pourcentage de completion de l'analyse
-    info_label['text'] = "Données reçues. Vous pouvez imprimer le rapport."
-    info2_label['text'] = "                                                      "
+            #print(data)
+    info_label['text'] = "Données collectées. Traitement en cours.                             "
+    info2_label['text'] = "                                                                    "
+    fenetre.update_idletasks()
     return datas
 
 
@@ -173,45 +237,101 @@ def get_axis_value(Axe, data_List, Nb_ligne, ):
 
 
 ######################################### MODIF
-def plot(k, Nb_ligne, Data_axis, axis_split):
+def plot(Nb_ligne, Datas):
     # fonction permettant l'analyse fréquentielle ainsi que la génération de graphiques
+    for k in range(0,3 * nbcapteur):  # boucle for allant de 0 jusqu'au nombre d'axe*nombre de capteurs ( 1 capteur * 3 axes)
+        Data_Axis = get_axis_value(k, Datas, Nb_ligne)  # fonction utilisée pour changer la taille de la matrice Datas pour récuperer les valeurs pour chaque axe
+        axis_split = [Data_Axis[x:x + 2 * Fe] for x in range(0, len(Data_Axis),2 * Fe)]  # Split de la liste des valeurs pour un axe en époque de 2 secondes( 2*Fe )
+        # définition de l'axe
+        if k % 3 == 0:
+            if k==0 :
+                Axe = "1X"
+            else:
+                Axe = str((k//3)+1) + str("X")
+        elif k % 3  == 1:
+            Axe = str(ceil(k/3)) + str("Y")
+        else:
+            Axe = str(ceil(k/3)) + str("Z")
 
-    # définition de l'axe
-    if k % (3 * nbcapteur) == 0:
-        Axe = str("X")
-    elif k % (3 * nbcapteur) == 1:
-        Axe = str("Y")
-    else:
-        Axe = str("Z")
+        ffts = []
+        t = np.linspace(0.0, Nb_ligne * T, Nb_ligne)  # definition de notre vecteur temporel allant de 0 jusqu'a la valeur
+        # définie par l'utilisateur
+        xf = np.linspace(0.0, 30, 2 * Fe)  # vecteur fréquentiel
+        for element in range(len(axis_split)):  # pour chaque époque -> générer une fft
+            yf = scipy.fftpack.fft(axis_split[element])  # genere la fft
+            ffts.append(np.abs(yf))  # nous n'avons besoin de que la valeur absolue de la fft
+        somme = [sum(row[i] for row in ffts) for i in
+                 range(len(ffts[0]))]  # calcul une somme pour chaque i eme valeurs des époques
+        moy = [x / len(ffts) for x in somme]  # division par le nombre d'époque pour avoir une moyenne
+        MOY = np.asarray(moy)  # utilisation de numpy pour un meilleur affichage
 
-    ffts = []
-    t = np.linspace(0.0, Nb_ligne * T, Nb_ligne)  # definition de notre vecteur temporel allant de 0 jusqu'a la valeur
-    # définie par l'utilisateur
-    xf = np.linspace(0.0, 30, 2 * Fe)  # vecteur fréquentiel
-    for element in range(len(axis_split)):  # pour chaque époque -> générer une fft
-        yf = scipy.fftpack.fft(axis_split[element])  # genere la fft
-        ffts.append(np.abs(yf))  # nous n'avons besoin de que la valeur absolue de la fft
-    somme = [sum(row[i] for row in ffts) for i in
-             range(len(ffts[0]))]  # calcul une somme pour chaque i eme valeurs des époques
-    moy = [x / len(ffts) for x in somme]  # division par le nombre d'époque pour avoir une moyenne
-    MOY = np.asarray(moy)  # utilisation de numpy pour un meilleur affichage
+        fig=plt.figure(figsize=(12, 4.8))  # paramètre pour générer des graphiques
+        plt.subplot(211)  # subplot pour le graphique temporel
+        plt.title("Évolution temporelle & fréquentielle du capteur  - Axe : " + Axe)
+        plt.plot(t, Data_Axis, linewidth=0.5)
+        plt.ylabel('Amplitude du signal')
+        plt.xlabel('Temps')
 
-    plt.figure(figsize=(12, 4.8))  # paramètre pour générer des graphiques
-    plt.subplot(211)  # subplot pour le graphique temporel
-    plt.title("Évolution temporelle & fréquentielle du capteur  - Axe : " + Axe)
-    plt.plot(t, Data_axis, linewidth=0.5)
-    plt.ylabel('Amplitude du signal')
-    plt.xlabel('Temps')
+        plt.subplot(212)  # subplot pour le graphique fréquentiel
+        plt.plot(xf, 2 * MOY / len(MOY))
+        plt.ylabel('Amplitude de la FFT')
+        plt.xlabel('Fréquence')
+        axes = plt.gca()
+        axes.set_xlim([0, 25])
+        plt.grid(True)
+        if not os.path.exists('Images'):
+            os.mkdir("/Images")
+        plt.savefig('Images/' + Axe + '.png')
+        plt.close(fig)
 
-    plt.subplot(212)  # subplot pour le graphique fréquentiel
-    plt.plot(xf, 2 * MOY / len(MOY))
-    plt.ylabel('Amplitude de la FFT')
-    plt.xlabel('Fréquence')
-    axes = plt.gca()
-    axes.set_xlim([0, 25])
-    plt.grid(True)
-    plt.savefig('Images/Analyse-capt-' + Axe + '.png')
+def plotmoy(Nb_ligne,Datas):
+    Datas_T = np.transpose(Datas)
+    x_Datas_T=Datas_T[::3]
+    y_Datas_T = Datas_T[1::3]
+    z_Datas_T = Datas_T[2::3]
+    xmoy_Datas_T=np.mean(x_Datas_T.astype(np.float), axis=0)
+    ymoy_Datas_T = np.mean(y_Datas_T.astype(np.float), axis=0)
+    zmoy_Datas_T = np.mean(z_Datas_T.astype(np.float), axis=0)
+    moy_Datas_T=np.array([xmoy_Datas_T, ymoy_Datas_T, zmoy_Datas_T])
+    for i in range(0,len(moy_Datas_T)):
+        axis_moy_Datas_T=moy_Datas_T[i]
+        axis_split = [axis_moy_Datas_T[x:x + 2 * Fe] for x in range(0, len(axis_moy_Datas_T), 2 * Fe)]
+        if i % 3 == 0:
+            Axe = str("X")
+        elif i % 3 == 1:
+            Axe = str("Y")
+        else:
+            Axe = str("Z")
+        ffts = []
+        t = np.linspace(0.0, Nb_ligne * T, Nb_ligne)  # definition de notre vecteur temporel allant de 0 jusqu'a la valeur
+        # définie par l'utilisateur
+        xf = np.linspace(0.0, 30, 2 * Fe)  # vecteur fréquentiel
+        for element in range(len(axis_split)):  # pour chaque époque -> générer une fft
+            yf = scipy.fftpack.fft(axis_split[element])  # genere la fft
+            ffts.append(np.abs(yf))  # nous n'avons besoin de que la valeur absolue de la fft
+        somme = [sum(row[i] for row in ffts) for i in
+                 range(len(ffts[0]))]  # calcul une somme pour chaque i eme valeurs des époques
+        moy = [x / len(ffts) for x in somme]  # division par le nombre d'époque pour avoir une moyenne
+        MOY = np.asarray(moy)  # utilisation de numpy pour un meilleur affichage
 
+        fig=plt.figure(figsize=(12, 4.8))  # paramètre pour générer des graphiques
+        plt.subplot(211)  # subplot pour le graphique temporel
+        plt.title("Évolution temporelle & fréquentielle moyenne  - Axe : " + Axe)
+        plt.plot(t, axis_moy_Datas_T, linewidth=0.5)
+        plt.ylabel('Amplitude du signal')
+        plt.xlabel('Temps')
+
+        plt.subplot(212)  # subplot pour le graphique fréquentiel
+        plt.plot(xf, 2 * MOY / len(MOY))
+        plt.ylabel('Amplitude de la FFT')
+        plt.xlabel('Fréquence')
+        axes = plt.gca()
+        axes.set_xlim([0, 25])
+        plt.grid(True)
+        if not os.path.exists('Images'):
+            os.mkdir("/Images")
+        plt.savefig('Images/Moy' + Axe + '.png')
+        plt.close(fig)
 
 #########################################
 def affiche():
@@ -238,23 +358,18 @@ def start():
     global rapport  # définition d'une variable globale pour empêcher l'utilisation du bouton imprimer avant d'avoir réalisé l'analyse.
     bouton_print.configure(state="disabled")
     choix = affiche()  # fonction permettant d'envoyer le bon caractère sur le port série pour définir le temps d'acquisition du programme.
-    Nb_ligne, Nb_ech = define_value(
-        choix)  # fonction permettant de définir les constantes utilisées dans le code en fonction du choix de l'utilisateur.
+    Nb_ligne, Nb_ech = define_value(choix)  # fonction permettant de définir les constantes utilisées dans le code en fonction du choix de l'utilisateur.
     bouton_start.configure(state="disabled")
     fenetre.update_idletasks()
     info_label.grid(row=4, column=0, sticky='w', padx=3, columnspan=2)
-    info_label['text'] = "La prise de mesure de {} secondes a démarré.                 ".format(30 * (Nb_ligne // 3000))
+    info_label['text'] = "La prise de mesure de {} secondes a démarré.                              ".format(30 * (Nb_ligne // 3000))
     fenetre.update_idletasks()
-    Datas = read_serial(
-        Nb_ligne)  # Lecture des données envoyées par l'arduino sur le port série et enregistrement des données dans une liste.
+    Datas = read_serial(Nb_ligne)  # Lecture des données envoyées par l'arduino sur le port série et enregistrement des données dans une liste.
     axis_split = []  # définition d'une liste pour les époques de 2 secondes
-    for k in range(0,
-                   3 * nbcapteur):  # boucle for allant de 0 jusqu'au nombre d'axe*nombre de capteurs ( 1 capteur * 3 axes)
-        Data_Axis = get_axis_value(k, Datas,
-                                   Nb_ligne)  # fonction utilisée pour changer la taille de la matrice Datas pour récuperer les valeurs pour chaque axe
-        axis_split = [Data_Axis[x:x + 2 * Fe] for x in range(0, len(Data_Axis),
-                                                             2 * Fe)]  # Split de la liste des valeurs pour un axe en époque de 2 secondes( 2*Fe )
-        plot(k, Nb_ligne, Data_Axis, axis_split)  # fonction servant à generer nos axes
+    plot(Nb_ligne, Datas)  # generer les graphes temporels et fréquentiels pour chaque axe de chaque capteur
+    plotmoy(Nb_ligne,Datas) # generer les graphes temporels et fréquentiels pour chaque axe pour la moyenne des capteurs
+    excel_gen(Nb_ligne,Datas)# fonction utilisée pour pouvoir copier les données collectées dans un excel grace au bouton imprimer
+    Datas.clear() #Empty the datalist (!!!necessery to avoid issues in plotmoy)
     rapport = True  # autorisation d'utilisation du bouton d'impression
     bouton_print.configure(state="normal")
     bouton_start.configure(state="normal")
