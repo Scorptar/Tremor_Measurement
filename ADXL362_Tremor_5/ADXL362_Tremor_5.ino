@@ -49,6 +49,8 @@ int8_t processing = 0; // Flag to show if we are already gathering data from acc
 int16_t Counter_30sec = 0; // We have 640 interrupt each seconds
 int8_t Counter_slice = 0; // Counts the number of 30seconds slices. 30sec to 180sec <=> 1 to 6
 int8_t slicesNbr = 0; // Contains the time asked by the user (time asked = slicesNbr * 30)
+
+
 int START_ADDRESS_WRITE=100; 
 int START_ADDRESS_READ=100;
 
@@ -253,7 +255,6 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt
     START_ADDRESS_WRITE_3+=6;
     START_ADDRESS_WRITE_4+=6;
     START_ADDRESS_WRITE_5+=6;
-
 
     Counter_30sec++;
 

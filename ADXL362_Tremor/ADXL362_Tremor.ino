@@ -54,7 +54,7 @@ void setup() {
   x1.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x1.setNoise();                  // UltraLow noise setting
   x1.beginMeasure();              // Switch ADXL362 to measure mode
-  x1.checkAllControlRegs(); 
+
   
   SRAM.begin(); 
 
