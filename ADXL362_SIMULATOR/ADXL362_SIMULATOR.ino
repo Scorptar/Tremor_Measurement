@@ -2,6 +2,7 @@
   ADXL362 simulator in order to run TM with a ARDUINO NANO without ADXL362 accelerometers
   Needed hardware setup : Arduino nano only, plugged on COM3 for example using micro-usb cable.
   !!!16MHZ microcontroller (adjust OCR1A value in the code for 8MHz
+  !!!Set simu on True in TM.py code (global variables section)
 
 */
 

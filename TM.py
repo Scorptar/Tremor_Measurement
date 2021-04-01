@@ -24,7 +24,7 @@ import glob
 import serial
 import time
 import xlsxwriter
-
+import pathlib
 
 #########################################
 
@@ -67,6 +67,7 @@ ser = serial.Serial(COM, baudrate, timeout=1)
 firstclick = True
 rapport = False
 nbcapteur = 5  # nombre d'accéléromètres employés
+simu=False #SET ON TRUE IF USING ADXL362_SIMULATOR.INO
 
 
 def rapport_gen(nom, prenom, n_date):
@@ -91,7 +92,7 @@ def rapport_gen(nom, prenom, n_date):
             # Textes
             if i == 1 and nbcapteur>1:
                 msg=str("Analyse moyenne pour l'ensemble des capteurs")
-                pdf.text(67, 28, msg)
+                pdf.text(67, 25, msg)
             else :
                 msg=str("Analyse du capteur " + str(i-1))
                 pdf.text(90, 28, msg)
@@ -102,12 +103,12 @@ def rapport_gen(nom, prenom, n_date):
 
             # Images
             if i == 1 and nbcapteur > 1:
-                pdf.image('Images/MoyX.png', x=10, y=30, w=200)
-                pdf.image('Images/MoyY.png', x=10, y=100, w=200)
+                pdf.image('Images/MoyX.png', x=10, y=27, w=200)
+                pdf.image('Images/MoyY.png', x=10, y=105, w=200)
                 pdf.image('Images/MoyZ.png', x=10, y=180, w=200)
             else :
                 pdf.image('Images/' + str(i-1) + 'X.png', x=10, y=30, w=200)
-                pdf.image('Images/' + str(i-1) + 'Y.png', x=10, y=100, w=200)
+                pdf.image('Images/' + str(i-1) + 'Y.png', x=10, y=105, w=200)
                 pdf.image('Images/' + str(i-1) + 'Z.png', x=10, y=180, w=200)
 
             #Page number
@@ -208,7 +209,11 @@ def define_value(choix):
 ######################################### OK
 def read_serial(Nb_ligne):
     # fonction permettant de lire et de selectionner l'information envoyée sur le port série par le controlleur
-    for i in range(0, Nb_ligne + 30 * (Nb_ligne // 3000)):
+    if not simu :
+        if_normal=8 * (Nb_ligne // 3000)
+    else :
+        if_normal=0 #if using ADXL362_SIMULATOR.INO
+    for i in range(0, Nb_ligne + 30 * (Nb_ligne // 3000)+ if_normal):
         line = ser.readline()  # lit la ligne envoyée sur le port série et stocke les valeurs dans un string
         if i == 30 * (Nb_ligne // 3000) - 1:
             info_label['text'] = "Prise de mesure terminée. Transfert vers PC en cours        "
@@ -219,7 +224,7 @@ def read_serial(Nb_ligne):
             data = str(reg.group(1))  # stocke l'information mis en evidence par la regex dans une variable
             data = data.split(',')  # segmente la variable en une liste dont chaque cellule correspond a un axe
             datas.append(data)  # ajoute la liste précédente a la fin d'une matrice
-            #print(data)
+            print(data)
     info_label['text'] = "Données collectées. Traitement en cours.                             "
     info2_label['text'] = "                                                                    "
     fenetre.update_idletasks()
@@ -279,8 +284,12 @@ def plot(Nb_ligne, Datas):
         axes = plt.gca()
         axes.set_xlim([0, 25])
         plt.grid(True)
+        fig.tight_layout()
         if not os.path.exists('Images'):
-            os.mkdir("/Images")
+            curr_path=pathlib.Path().absolute()
+            directory="Images"
+            Images_path=os.path.join(curr_path,directory)
+            os.mkdir(Images_path)
         plt.savefig('Images/' + Axe + '.png')
         plt.close(fig)
 
@@ -328,8 +337,12 @@ def plotmoy(Nb_ligne,Datas):
         axes = plt.gca()
         axes.set_xlim([0, 25])
         plt.grid(True)
+        fig.tight_layout()
         if not os.path.exists('Images'):
-            os.mkdir("/Images")
+            curr_path = pathlib.Path().absolute()
+            directory = "Images"
+            Images_path = os.path.join(curr_path, directory)
+            os.mkdir(Images_path)
         plt.savefig('Images/Moy' + Axe + '.png')
         plt.close(fig)
 
