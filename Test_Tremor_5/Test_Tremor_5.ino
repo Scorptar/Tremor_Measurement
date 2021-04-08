@@ -41,7 +41,7 @@ int64_t START_ADDRESS_READ_5=6;
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(1000000);
 
   xl.begin(A1);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   xl.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
