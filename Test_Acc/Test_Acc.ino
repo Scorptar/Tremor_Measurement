@@ -23,28 +23,28 @@ void setup()
 {
   Serial.begin(115200);
 
-  x1.begin(9);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x1.begin(A1);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x1.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x1.setNoise();                  // UltraLow noise setting
   x1.beginMeasure();              // Switch ADXL362 to measure mode
   x1.checkAllControlRegs();
 
-  x2.begin(8);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x2.begin(A2);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x2.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x2.setNoise();                  // UltraLow noise setting
   x2.beginMeasure();              // Switch ADXL362 to measure mode
 
-  x3.begin(7);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x3.begin(A3);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x3.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x3.setNoise();                  // UltraLow noise setting
   x3.beginMeasure();              // Switch ADXL362 to measure mode
   
-  x4.begin(6);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x4.begin(A4);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x4.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x4.setNoise();                  // UltraLow noise setting
   x4.beginMeasure();              // Switch ADXL362 to measure mode
 
-  x5.begin(5);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
+  x5.begin(A5);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x5.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
   x5.setNoise();                  // UltraLow noise setting
   x5.beginMeasure();              // Switch ADXL362 to measure mode
@@ -54,11 +54,11 @@ void setup()
   Serial.println("Start Demo");
 
   //Pin assignement
-  NbrAcc[1] = 9;
-  NbrAcc[2] = 8;
-  NbrAcc[3] = 7;
-  NbrAcc[4] = 6;
-  NbrAcc[5] = 5;
+  NbrAcc[1] = A1;
+  NbrAcc[2] = A2;
+  NbrAcc[3] = A3;
+  NbrAcc[4] = A4;
+  NbrAcc[5] = A5;
 
 
 }

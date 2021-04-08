@@ -2,7 +2,7 @@
 #include <SPI.h>
 
 
-SRAM_23LC SRAM(&SPI, A1, SRAM_23LC1024);
+SRAM_23LC SRAM(&SPI, 6, SRAM_23LC1024);
 
 int16_t raw_data = 2520;                                //same type as Xdata,Ydata from the accelerometers
 //char buf_in[10];                                        //buffer for SRAM write
@@ -15,7 +15,7 @@ int16_t wd;
 
 void setup() 
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   SRAM.begin(); 
 
 }
