@@ -41,7 +41,7 @@ int64_t START_ADDRESS_READ_5=6;
 
 void setup() {
 
-  Serial.begin(1000000);
+  Serial.begin(1000000); //1Mhz serial (max)
 
   xl.begin(A1);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   xl.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
@@ -240,24 +240,27 @@ void ReadSRAM()
         MSB=SRAM.readByte(START_ADDRESS_READ); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         Serial.flush(); 
         Serial.print(",");   
         MSB=SRAM.readByte(START_ADDRESS_READ+2); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81); 
+        Serial.print(wd); 
 
         Serial.flush(); 
         Serial.print(",");
         MSB=SRAM.readByte(START_ADDRESS_READ+4); //Read MSB
         LSB=SRAM.readByte(START_ADDRESS_READ+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
 
         // Sensor 2
@@ -266,24 +269,27 @@ void ReadSRAM()
         MSB=SRAM2.readByte(START_ADDRESS_READ_2); //Read MSB
         LSB=SRAM2.readByte(START_ADDRESS_READ_2+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         Serial.flush(); 
         Serial.print(",");   
         MSB=SRAM2.readByte(START_ADDRESS_READ_2+2); //Read MSB
         LSB=SRAM2.readByte(START_ADDRESS_READ_2+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81); 
+        Serial.print(wd); 
 
         Serial.flush(); 
         Serial.print(",");
         MSB=SRAM2.readByte(START_ADDRESS_READ_2+4); //Read MSB
         LSB=SRAM2.readByte(START_ADDRESS_READ_2+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
 
         //Sensor 3
@@ -292,24 +298,27 @@ void ReadSRAM()
         MSB=SRAM3.readByte(START_ADDRESS_READ_3); //Read MSB
         LSB=SRAM3.readByte(START_ADDRESS_READ_3+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         Serial.flush(); 
         Serial.print(",");   
         MSB=SRAM3.readByte(START_ADDRESS_READ_3+2); //Read MSB
         LSB=SRAM3.readByte(START_ADDRESS_READ_3+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81); 
+        Serial.print(wd); 
 
         Serial.flush(); 
         Serial.print(",");
         MSB=SRAM3.readByte(START_ADDRESS_READ_3+4); //Read MSB
         LSB=SRAM3.readByte(START_ADDRESS_READ_3+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         //Sensor 4
         Serial.flush(); 
@@ -317,24 +326,27 @@ void ReadSRAM()
         MSB=SRAM4.readByte(START_ADDRESS_READ_4); //Read MSB
         LSB=SRAM4.readByte(START_ADDRESS_READ_4+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         Serial.flush(); 
         Serial.print(",");   
         MSB=SRAM4.readByte(START_ADDRESS_READ_4+2); //Read MSB
         LSB=SRAM4.readByte(START_ADDRESS_READ_4+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81); 
+        Serial.print(wd); 
 
         Serial.flush(); 
         Serial.print(",");
         MSB=SRAM4.readByte(START_ADDRESS_READ_4+4); //Read MSB
         LSB=SRAM4.readByte(START_ADDRESS_READ_4+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         //Sensor 5
         Serial.flush(); 
@@ -342,24 +354,27 @@ void ReadSRAM()
         MSB=SRAM5.readByte(START_ADDRESS_READ_5); //Read MSB
         LSB=SRAM5.readByte(START_ADDRESS_READ_5+1); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81);
+        Serial.print(wd);
 
         Serial.flush(); 
         Serial.print(",");   
         MSB=SRAM5.readByte(START_ADDRESS_READ_5+2); //Read MSB
         LSB=SRAM5.readByte(START_ADDRESS_READ_5+3); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.print((wd/1024)*9.81); 
+        Serial.print(wd); 
 
         Serial.flush(); 
         Serial.print(",");
         MSB=SRAM5.readByte(START_ADDRESS_READ_5+4); //Read MSB
         LSB=SRAM5.readByte(START_ADDRESS_READ_5+5); // Read LSB
         wd = ((int16_t)MSB << 8) | (LSB & 0xFF);
+        wd = (wd/1024)*9.81*1000; //Convert LSB/g => mm/s²
         Serial.flush(); 
-        Serial.println((wd/1024)*9.81);
+        Serial.println(wd);
 
         START_ADDRESS_READ+=6; 
         START_ADDRESS_READ_2+=6; 

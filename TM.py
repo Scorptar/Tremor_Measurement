@@ -7,6 +7,7 @@ import requests
 import re
 import matplotlib
 matplotlib.use("Agg")
+from scipy.fft import fft, fftfreq
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
@@ -154,30 +155,22 @@ class Data_Processing(Thread):
             else:
                 Axe = str(ceil(k / 3)) + str("Z")
 
-            ffts = []
-            t = np.linspace(0.0, self.Nb_ligne * T,
-                            self.Nb_ligne)  # definition de notre vecteur temporel allant de 0 jusqu'a la valeur
-            # définie par l'utilisateur
-            xf = np.linspace(0.0, 30, 2 * Fe)  # vecteur fréquentiel
-            for element in range(len(axis_split)):  # pour chaque époque -> générer une fft
-                yf = scipy.fftpack.fft(axis_split[element])  # genere la fft
-                ffts.append(np.abs(yf))  # nous n'avons besoin de que la valeur absolue de la fft
-            somme = [sum(row[i] for row in ffts) for i in
-                     range(len(ffts[0]))]  # calcul une somme pour chaque i eme valeurs des époques
-            moy = [x / len(ffts) for x in somme]  # division par le nombre d'époque pour avoir une moyenne
-            MOY = np.asarray(moy)  # utilisation de numpy pour un meilleur affichage
+            y = np.array(Data_Axis)
+            t = np.linspace(0.0, self.Nb_ligne * T, self.Nb_ligne, endpoint=False)
+            yf = fft(y)
+            xf = fftfreq(self.Nb_ligne, T)[:self.Nb_ligne // 2]
 
             fig = plt.figure(figsize=(12, 4.8))  # paramètre pour générer des graphiques
             plt.subplot(211)  # subplot pour le graphique temporel
             plt.title("Évolution temporelle & fréquentielle du capteur  - Axe : " + Axe)
             plt.plot(t, Data_Axis, linewidth=0.5)
-            plt.ylabel('Amplitude du signal')
-            plt.xlabel('Temps')
+            plt.ylabel('Amplitude du signal [mm/s²]')
+            plt.xlabel('Temps [s]')
 
             plt.subplot(212)  # subplot pour le graphique fréquentiel
-            plt.plot(xf, 2 * MOY / len(MOY))
-            plt.ylabel('Amplitude de la FFT')
-            plt.xlabel('Fréquence')
+            plt.plot(xf, 2.0 / self.Nb_ligne * np.abs(yf[0:self.Nb_ligne // 2]))
+            plt.ylabel('Amplitude de la FFT [mm/s²]')
+            plt.xlabel('Fréquence [Hz]')
             axes = plt.gca()
             axes.set_xlim([0, 25])
             plt.grid(True)
@@ -195,43 +188,35 @@ class Data_Processing(Thread):
         x_Datas_T = Datas_T[::3]
         y_Datas_T = Datas_T[1::3]
         z_Datas_T = Datas_T[2::3]
-        xmoy_Datas_T = np.mean(x_Datas_T.astype(np.float), axis=0)
-        ymoy_Datas_T = np.mean(y_Datas_T.astype(np.float), axis=0)
-        zmoy_Datas_T = np.mean(z_Datas_T.astype(np.float), axis=0)
+        xmoy_Datas_T = np.mean(x_Datas_T.astype(float), axis=0)
+        ymoy_Datas_T = np.mean(y_Datas_T.astype(float), axis=0)
+        zmoy_Datas_T = np.mean(z_Datas_T.astype(float), axis=0)
         moy_Datas_T = np.array([xmoy_Datas_T, ymoy_Datas_T, zmoy_Datas_T])
         for i in range(0, len(moy_Datas_T)):
             axis_moy_Datas_T = moy_Datas_T[i]
-            axis_split = [axis_moy_Datas_T[x:x + 2 * Fe] for x in range(0, len(axis_moy_Datas_T), 2 * Fe)]
             if i % 3 == 0:
                 Axe = str("X")
             elif i % 3 == 1:
                 Axe = str("Y")
             else:
                 Axe = str("Z")
-            ffts = []
-            t = np.linspace(0.0, self.Nb_ligne * T,
-                            self.Nb_ligne)  # definition de notre vecteur temporel allant de 0 jusqu'a la valeur
-            # définie par l'utilisateur
-            xf = np.linspace(0.0, 30, 2 * Fe)  # vecteur fréquentiel
-            for element in range(len(axis_split)):  # pour chaque époque -> générer une fft
-                yf = scipy.fftpack.fft(axis_split[element])  # genere la fft
-                ffts.append(np.abs(yf))  # nous n'avons besoin de que la valeur absolue de la fft
-            somme = [sum(row[i] for row in ffts) for i in
-                     range(len(ffts[0]))]  # calcul une somme pour chaque i eme valeurs des époques
-            moy = [x / len(ffts) for x in somme]  # division par le nombre d'époque pour avoir une moyenne
-            MOY = np.asarray(moy)  # utilisation de numpy pour un meilleur affichage
+
+            y = np.array(axis_moy_Datas_T)
+            t = np.linspace(0.0, self.Nb_ligne * T, self.Nb_ligne, endpoint=False)
+            yf = fft(y)
+            xf = fftfreq(self.Nb_ligne, T)[:self.Nb_ligne // 2]
 
             fig = plt.figure(figsize=(12, 4.8))  # paramètre pour générer des graphiques
             plt.subplot(211)  # subplot pour le graphique temporel
             plt.title("Évolution temporelle & fréquentielle moyenne  - Axe : " + Axe)
             plt.plot(t, axis_moy_Datas_T, linewidth=0.5)
-            plt.ylabel('Amplitude du signal')
-            plt.xlabel('Temps')
+            plt.ylabel('Amplitude du signal [mm/s²]')
+            plt.xlabel('Temps [s]')
 
             plt.subplot(212)  # subplot pour le graphique fréquentiel
-            plt.plot(xf, 2 * MOY / len(MOY))
-            plt.ylabel('Amplitude de la FFT')
-            plt.xlabel('Fréquence')
+            plt.plot(xf, 2.0 / self.Nb_ligne * np.abs(yf[0:self.Nb_ligne // 2]))
+            plt.ylabel('Amplitude de la FFT [mm/s²]')
+            plt.xlabel('Fréquence [Hz]')
             axes = plt.gca()
             axes.set_xlim([0, 25])
             plt.grid(True)
@@ -436,7 +421,7 @@ class App(tk.Tk):
                                            self.var_date.get(),
                                            self.var_duree.get())
         self.lines_number= self.data_acquisition.define_parameters()  #define the wanted measure time window and array size
-        self.measure_time= 53 * (self.lines_number // 3000) #for 30s of measure, 30s more to transmit
+        self.measure_time= 44 * (self.lines_number // 3000) #for 30s of measure, 14s more to transmit
         self.data_acquisition.start() #launch data acquisition thread
         self.monitor_acquisition(self.data_acquisition,self.measure_time) #monitor data acquisition thread
 
@@ -452,10 +437,10 @@ class App(tk.Tk):
                 if countdown>0 :
                     self.after(1000, self.monitor_acquisition, self.data_acquisition, countdown - 1) #rappelle la fonction 1 seconde plus tard
             if not simu :
-                if countdown > self.measure_time * 23 / 53 :
+                if countdown > self.measure_time * 14 / 44 :
                     self.info_label['text'] = "Prise de mesure en cours."
                     self.info2_label['text'] = "Temps restant : {} secondes".format(countdown)
-                if countdown <= self.measure_time * 23 / 53 :
+                if countdown <= self.measure_time * 14 / 44 :
                     self.info_label['text'] = "Récupération des données en cours."
                     self.info2_label['text'] = "Temps restant : {} secondes".format(countdown)
                 if countdown>0 :

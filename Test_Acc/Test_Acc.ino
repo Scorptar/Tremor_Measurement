@@ -21,7 +21,7 @@ int8_t slicesNbr = 0; // Contains the time asked by the user (time asked = slice
 
 void setup() 
 {
-  Serial.begin(115200);
+  Serial.begin(1000000);
 
   x1.begin(A1);                   // Setup SPI protocol, issue device soft reset and make a reinitialisation
   x1.setFilterCL();               // MNT : Gforce=8, HALF_BW=1/2 (50Hz), ODR=100HZ  avant :GForce = 8, HALF_BW = 1/2 (100Hz), ODR = 200Hz 
@@ -66,13 +66,16 @@ void setup()
 void loop() 
 {
 
-    x1.readXYZData(NbrAcc[1], Xvalue, Yvalue, Zvalue);
-    Serial.print("X1value: "); 
-    Serial.print(Xvalue); 
+    x1.readXYZData(NbrAcc[2], Xvalue, Yvalue, Zvalue);
+    Serial.print("X1value: ");
+    //Serial.print(Xvalue); 
+    Serial.print((Xvalue/1024)); 
     Serial.print(" Y1value: "); 
-    Serial.print(Yvalue); 
-    Serial.print(" Z1value: "); 
-    Serial.println(Zvalue); 
+    //Serial.print(Yvalue); 
+    Serial.print((Yvalue/1024));
+    Serial.print(" Z1value: ");
+    Serial.print(Zvalue);  
+    //Serial.println((Zvalue/1024)); 
     Temperature= x1.readTemp(); 
     Serial.print(" Temperature 1: "); 
     Serial.println(Temperature); 
