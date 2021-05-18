@@ -60,7 +60,7 @@ T = 1.0 / Fe  # sample spacing
 baudrate = 1000000
 firstclick = True
 ser= serial.Serial(COM, baudrate, timeout=1)
-nbcapteur = 5  # nombre d'accéléromètres employés
+nbcapteur = 4 # nombre d'accéléromètres employés
 simu=False #set on True if using ADXL362_SIMULATOR.INO
 
 class Data_Acquisition(Thread):
@@ -305,11 +305,14 @@ class Data_Processing(Thread):
                 pdf.image('Images/MoyX.png', x=10, y=27, w=200)
                 pdf.image('Images/MoyY.png', x=10, y=105, w=200)
                 pdf.image('Images/MoyZ.png', x=10, y=180, w=200)
-            else:
+            elif i > 1 and nbcapteur > 1 :
                 pdf.image('Images/' + str(i - 1) + 'X.png', x=10, y=30, w=200)
                 pdf.image('Images/' + str(i - 1) + 'Y.png', x=10, y=105, w=200)
                 pdf.image('Images/' + str(i - 1) + 'Z.png', x=10, y=180, w=200)
-
+            else :
+                pdf.image('Images/' + str(i) + 'X.png', x=10, y=30, w=200)
+                pdf.image('Images/' + str(i) + 'Y.png', x=10, y=105, w=200)
+                pdf.image('Images/' + str(i) + 'Z.png', x=10, y=180, w=200)
             # Page number
             pdf.set_y(260)
             pdf.cell(0, 10, 'Page ' + str(pdf.page_no()) + '/' + nbpage, 0, 0, 'C')

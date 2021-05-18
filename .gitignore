@@ -1,7 +1,6 @@
 *.pdf
 *.png
 *.xlsx
-TM.exe
 *.pyc
 *.pyc
 __pycache__/TM.cpython-37.pyc
