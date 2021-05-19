@@ -20,5 +20,5 @@ TM.py is runned on the PC : the program make a 30,60,90,120,150 seconds analysis
 2) Install Arduino software
 3) In your ...\Documents\Arduino\libraries folder, put the ADXL362 and SRAM libraries folders (see Arduino/libraries folder)
 4) Depending the number of accelerometer (x), put the right TM_x.ino code in your Arduino Nano
-6) Lauch TM.exe or TM.py (the second option will nill you to install the requested python modules)
+6) Lauch TM.exe or TM.py (the second option will need you to install the requested python modules)
 7) Done.
