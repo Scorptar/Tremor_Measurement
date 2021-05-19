@@ -12,7 +12,7 @@ Tremor diseases typically make 1-25 Hz signal measured using accelerometers (1 t
 
 # Software
 
-TM.py is runned on the PC : the program make a 30,60,90,120,150 seconds analysis and output an average FFT from the different sensors. Then, the user can generate a PDF with the results.
+TM.py is runned on the PC : the program make a 30,60,90,120,150 seconds analysis and output an average FFT from the different sensors. Then, the program generates a PDF with the results and an Excel with raw data.
 
 # Installation
 
