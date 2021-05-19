@@ -1,6 +1,6 @@
 # Description
 
-Tremor Measurement using ADXL362 accelerometers controlled by an Arduino (ATmega328p) + data acquisition on PC through serial port (USB).
+Tremor Measurement using ADXL362 accelerometers controlled by an Arduino (ATmega328p) + temporary storage on 23LC1024 SRAMs + data acquisition on PC through serial port (USB).
 
 # Application
 
